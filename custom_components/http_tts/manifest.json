@@ -1,0 +1,8 @@
+{
+    "domain": "http_tts",
+    "name": "HTTP TTS Speaker",
+    "documentation": "https://github.com/mLupine/ha-http-tts",
+    "dependencies": [],
+    "codeowners": ["@mLupine"],
+    "requirements": []
+}

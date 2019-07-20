@@ -1,4 +1,6 @@
-# TTS Bluetooth Speaker for Home Assistant
+# HTTP TTS for Home Assistant
+
+*The project is a work in progress*
 
 This project provides a media player (custom component) for Home Assistant that plays TTS (text-to-speech) via a Bluetooth speaker.
 

@@ -2,6 +2,7 @@
 Support for TTS on a HTTP endpoint
 
 """
+import voluptuous as vol
 
 from homeassistant.components.media_player import (
     SUPPORT_PLAY_MEDIA,
@@ -21,7 +22,7 @@ import requests
 import sys
 import time
 
-DEFAULT_NAME = 'TTS Bluetooth Speaker'
+DEFAULT_NAME = 'http_tts'
 DEFAULT_CACHE_DIR = "tts"
 
 SUPPORT_HTTP_TTS_SPEAKER = SUPPORT_PLAY_MEDIA
@@ -29,8 +30,13 @@ SUPPORT_HTTP_TTS_SPEAKER = SUPPORT_PLAY_MEDIA
 CONF_ENDPOINT = 'endpoint'
 CONF_CACHE_DIR = 'cache_dir'
 
-
 _LOGGER = logging.getLogger(__name__)
+
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
+    vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
+    vol.Required(CONF_ENDPOINT): cv.url,
+    vol.Optional(CONF_CACHE_DIR, default=DEFAULT_CACHE_DIR): cv.string,
+})
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Setup the HTTP TTS Speaker platform."""

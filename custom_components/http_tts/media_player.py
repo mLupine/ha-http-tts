@@ -143,7 +143,7 @@ class HTTPTTSSpeakerDevice(MediaPlayerDevice):
           r = requests.post(endpoint, files={'media': f})
           _LOGGER.debug("Endpoint response %d: %s", r.status_code, r.text)
         except Exception as e:
-          _LOGGER.error("Error pushing to the endpoint: %s", error)
+          _LOGGER.error("Error pushing to the endpoint: %s", e)
   
 #         command = "mplayer -ao {} -quiet -channels 2 -volume {} {}".format(sink, volume, media_file_to_play);
 #         _LOGGER.debug('Executing command: %s', command)

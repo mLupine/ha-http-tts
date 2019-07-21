@@ -17,6 +17,7 @@ import logging
 
 import os
 import re
+import requests
 import sys
 import time
 
@@ -37,7 +38,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     endpoint = config.get(CONF_ENDPOINT)
     cache_dir = get_tts_cache_dir(hass, config.get(CONF_CACHE_DIR))
 
-    add_devices([BluetoothSpeakerDevice(hass, name, endpoint, cache_dir)])
+    add_devices([HTTPTTSSpeakerDevice(hass, name, endpoint, cache_dir)])
     return True
 
 def get_tts_cache_dir(hass, cache_dir):
@@ -46,7 +47,7 @@ def get_tts_cache_dir(hass, cache_dir):
         cache_dir = hass.config.path(cache_dir)
     return cache_dir
 
-class BluetoothSpeakerDevice(MediaPlayerDevice):
+class HTTPTTSSpeakerDevice(MediaPlayerDevice):
     """Representation of an HTTP TTS Speaker on the network."""
 
     def __init__(self, hass, name, endpoint, cache_dir):
@@ -102,49 +103,52 @@ class BluetoothSpeakerDevice(MediaPlayerDevice):
         self._is_standby = False
 
         media_file = self._cache_dir + '/' + media_id[media_id.rfind('/') + 1:];
-        sink = 'pulse::bluez_sink.' + re.sub(':', '_', self._address) + '.a2dp_sink'
-        volume = str(self._volume * 100)
-
-        pre_silence_file = ""
-        post_silence_file = ""
-
+        
         media_file_to_play = media_file
 
-        if (self._pre_silence_duration > 0) or (self._post_silence_duration > 0):
-            media_file_to_play = "/tmp/tts_{}".format(os.path.basename(media_file))
+#         if (self._pre_silence_duration > 0) or (self._post_silence_duration > 0):
+#             media_file_to_play = "/tmp/tts_{}".format(os.path.basename(media_file))
 
-            if (self._pre_silence_duration > 0):
-              pre_silence_file = "/tmp/pre_silence.mp3"
-              command = "sox -c 1 -r 24000 -n {} synth {} brownnoise gain -50".format(pre_silence_file, self._pre_silence_duration)
-              _LOGGER.debug('Executing command: %s', command)
-              subprocess.call(command, shell=True)
+#             if (self._pre_silence_duration > 0):
+#               pre_silence_file = "/tmp/pre_silence.mp3"
+#               command = "sox -c 1 -r 24000 -n {} synth {} brownnoise gain -50".format(pre_silence_file, self._pre_silence_duration)
+#               _LOGGER.debug('Executing command: %s', command)
+#               subprocess.call(command, shell=True)
 
-            if (self._post_silence_duration > 0):
-              post_silence_file = "/tmp/post_silence.mp3"
-              command = "sox -c 1 -r 24000 -n {} synth {} brownnoise gain -50".format(post_silence_file, self._post_silence_duration)
-              _LOGGER.debug('Executing command: %s', command)
-              subprocess.call(command, shell=True)
+#             if (self._post_silence_duration > 0):
+#               post_silence_file = "/tmp/post_silence.mp3"
+#               command = "sox -c 1 -r 24000 -n {} synth {} brownnoise gain -50".format(post_silence_file, self._post_silence_duration)
+#               _LOGGER.debug('Executing command: %s', command)
+#               subprocess.call(command, shell=True)
 
-            command = "sox {} {} {} {}".format(pre_silence_file, media_file, post_silence_file, media_file_to_play)
-            _LOGGER.debug('Executing command: %s', command)
-            subprocess.call(command, shell=True)
+#             command = "sox {} {} {} {}".format(pre_silence_file, media_file, post_silence_file, media_file_to_play)
+#             _LOGGER.debug('Executing command: %s', command)
+#             subprocess.call(command, shell=True)
 
-        if self._tracker:
-            self._hass.services.call(bluetooth_tracker.DOMAIN, bluetooth_tracker.BLUETOOTH_TRACKER_SERVICE_TURN_OFF, None)
-            while self._hass.states.get(bluetooth_tracker.DOMAIN + '.' + bluetooth_tracker.ENTITY_ID).state == bluetooth_tracker.STATE_ON:
-                _LOGGER.debug('Waiting for Bluetooth tracker to turn off')
-                time.sleep(0.5)
+#         if self._tracker:
+#             self._hass.services.call(bluetooth_tracker.DOMAIN, bluetooth_tracker.BLUETOOTH_TRACKER_SERVICE_TURN_OFF, None)
+#             while self._hass.states.get(bluetooth_tracker.DOMAIN + '.' + bluetooth_tracker.ENTITY_ID).state == bluetooth_tracker.STATE_ON:
+#                 _LOGGER.debug('Waiting for Bluetooth tracker to turn off')
+#                 time.sleep(0.5)
 
-        command = "mplayer -ao {} -quiet -channels 2 -volume {} {}".format(sink, volume, media_file_to_play);
-        _LOGGER.debug('Executing command: %s', command)
-        subprocess.call(command, shell=True)
+        try:
+          _LOGGER.debug("Pushing to endpoint %s", endpoint)
+          f = open(media_file_to_play, 'rb')
+          r = requests.post(endpoint, files={'media': f})
+          _LOGGER.debug("Endpoint response %d: %s", r.status_code, r.text)
+        except Exception as e:
+          _LOGGER.error("Error pushing to the endpoint: %s", error)
+  
+#         command = "mplayer -ao {} -quiet -channels 2 -volume {} {}".format(sink, volume, media_file_to_play);
+#         _LOGGER.debug('Executing command: %s', command)
+#         subprocess.call(command, shell=True)
 
-        if (self._pre_silence_duration > 0) or (self._post_silence_duration > 0):
-            command = "rm {} {} {}".format(pre_silence_file, media_file_to_play, post_silence_file);
-            _LOGGER.debug('Executing command: %s', command)
-            subprocess.call(command, shell=True)
+#         if (self._pre_silence_duration > 0) or (self._post_silence_duration > 0):
+#             command = "rm {} {} {}".format(pre_silence_file, media_file_to_play, post_silence_file);
+#             _LOGGER.debug('Executing command: %s', command)
+#             subprocess.call(command, shell=True)
 
-        if self._tracker:
-            self._hass.services.call(bluetooth_tracker.DOMAIN, bluetooth_tracker.BLUETOOTH_TRACKER_SERVICE_TURN_ON, None)
+#         if self._tracker:
+#             self._hass.services.call(bluetooth_tracker.DOMAIN, bluetooth_tracker.BLUETOOTH_TRACKER_SERVICE_TURN_ON, None)
 
         self._is_standby = True

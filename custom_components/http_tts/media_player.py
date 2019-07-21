@@ -137,6 +137,8 @@ class HTTPTTSSpeakerDevice(MediaPlayerDevice):
 #                 _LOGGER.debug('Waiting for Bluetooth tracker to turn off')
 #                 time.sleep(0.5)
 
+        endpoint = self._endpoint
+        
         try:
           _LOGGER.debug("Pushing to endpoint %s", endpoint)
           f = open(media_file_to_play, 'rb')

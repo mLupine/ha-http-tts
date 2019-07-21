@@ -140,7 +140,7 @@ class HTTPTTSSpeakerDevice(MediaPlayerDevice):
         endpoint = self._endpoint
         
         try:
-          _LOGGER.debug("Pushing to endpoint %s", endpoint)
+          _LOGGER.info("Pushing %s to endpoint %s", media_file_to_play, endpoint)
           f = open(media_file_to_play, 'rb')
           r = requests.post(endpoint, files={'media': f})
           _LOGGER.debug("Endpoint response %d: %s", r.status_code, r.text)

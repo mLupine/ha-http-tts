@@ -1,3 +1,4 @@
 media_player:
   - platform: http_tts
+    name: living_room_tts
     endpoint: http://127.0.0.1/tts

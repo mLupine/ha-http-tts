@@ -1,0 +1,13 @@
+{
+    "http_tts": {
+        "changelog": "https://github.com/mLupine/ha-http-tts",
+        "local_location": "/custom_components/http_tts/media_player.py",
+        "remote_location": "https://raw.githubusercontent.com/mLupine/ha-http-tts/master/custom_components/http_tts/media_player.py",
+        "resources": [
+            "https://raw.githubusercontent.com/mLupine/ha-http-tts/master/custom_components/http_tts/manifest.json"
+        ],
+        "updated_at": "2019-07-21",
+        "version": "0.1.0",
+        "visit_repo": "https://github.com/mLupine/ha-http-tts"
+    }
+}
